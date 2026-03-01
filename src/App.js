@@ -1,17 +1,11 @@
 import React, { useState } from 'react';
-import { Video, Scissors, Sun, Download, Upload, Zap, Sparkles } from 'lucide-react';
+import { Video, Scissors, Sun, Download, Upload, Zap, Sparkles, X } from 'lucide-react';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('video');
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState(null);
-
-  const tools = [
-    { id: 'video', name: 'Image to Video', icon: <Video className="w-5 h-5" /> },
-    { id: 'upscale', name: '4K Upscaler', icon: <Zap className="w-5 h-5" /> },
-    { id: 'bg', name: 'BG Remover', icon: <Scissors className="w-5 h-5" /> },
-    { id: 'portrait', name: 'AI Portrait', icon: <Sparkles className="w-5 h-5" /> }
-  ];
+  const [modalContent, setModalContent] = useState(null);
 
   const handleProcess = () => {
     setIsProcessing(true);
@@ -21,61 +15,67 @@ const App = () => {
     }, 2500);
   };
 
-  const handleDownload = () => {
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = `AIVision_Result.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const Modal = ({ title, content }) => (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-white/10 p-8 rounded-3xl max-w-2xl w-full max-h-[80vh] overflow-y-auto relative">
+        <button onClick={() => setModalContent(null)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X /></button>
+        <h2 className="text-2xl font-bold mb-4 text-purple-400">{title}</h2>
+        <div className="text-slate-300 space-y-4 text-sm leading-relaxed whitespace-pre-line">{content}</div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-slate-950 text-white font-sans">
+      {modalContent && <Modal title={modalContent.title} content={modalContent.content} />}
+      
       <nav className="border-b border-white/10 px-6 py-4 flex justify-between items-center bg-slate-950/50 backdrop-blur-md sticky top-0 z-50">
         <div className="flex items-center gap-2">
           <div className="bg-purple-600 p-2 rounded-lg"><Sun className="w-5 h-5" /></div>
-          <span className="text-xl font-bold tracking-tighter">AIVISION</span>
+          <span className="text-xl font-bold tracking-tighter uppercase">AIVision</span>
         </div>
-        <button className="bg-white text-black px-5 py-2 rounded-full text-sm font-bold hover:bg-slate-200 transition-all">Sign In</button>
       </nav>
 
       <main className="max-w-5xl mx-auto px-6 py-16 text-center">
-        <h1 className="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-white to-slate-500 bg-clip-text text-transparent">AI Media Studio</h1>
-        <p className="text-slate-400 text-lg mb-12 max-w-xl mx-auto">Neural tools for image and video enhancement.</p>
-
+        <h1 className="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-white to-slate-500 bg-clip-text text-transparent italic">AI MEDIA SUITE</h1>
+        
+        {/* Tools Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-          {tools.map((t) => (
-            <button key={t.id} onClick={() => {setActiveTab(t.id); setResult(null);}} className={`p-5 rounded-3xl border transition-all ${activeTab === t.id ? 'bg-purple-600/20 border-purple-500 shadow-lg shadow-purple-500/10' : 'bg-slate-900 border-white/5 hover:border-white/20'}`}>
-              <div className={`mb-3 p-2 w-fit rounded-xl mx-auto ${activeTab === t.id ? 'bg-purple-500' : 'bg-slate-800'}`}>{t.icon}</div>
-              <p className="font-bold text-sm uppercase tracking-widest">{t.name}</p>
+          {['video', 'upscale', 'bg', 'portrait'].map((t) => (
+            <button key={t} onClick={() => {setActiveTab(t); setResult(null);}} className={`p-6 rounded-[2rem] border transition-all ${activeTab === t ? 'bg-purple-600/20 border-purple-500' : 'bg-slate-900 border-white/5'}`}>
+              <p className="font-black text-xs uppercase tracking-[0.2em]">{t}</p>
             </button>
           ))}
         </div>
 
-        <div className="bg-slate-900/50 border-2 border-dashed border-white/10 rounded-[2.5rem] p-12">
+        {/* Processing Area */}
+        <div className="bg-slate-900/50 border-2 border-dashed border-white/10 rounded-[3rem] p-12 mb-16">
           {!result ? (
-            <button onClick={handleProcess} disabled={isProcessing} className="bg-purple-600 hover:bg-purple-500 text-white px-10 py-5 rounded-2xl font-black text-lg transition-all active:scale-95 flex items-center gap-3 mx-auto">
-              {isProcessing ? 'PROCESSING...' : <><Upload className="w-6 h-6" /> UPLOAD FILE</>}
+            <button onClick={handleProcess} disabled={isProcessing} className="bg-white text-black px-12 py-6 rounded-2xl font-black text-xl hover:bg-purple-500 hover:text-white transition-all">
+              {isProcessing ? 'PROCESSING...' : 'UPLOAD & CONVERT'}
             </button>
           ) : (
-            <div className="space-y-8">
-              <img src={result} alt="Result" className="max-w-md mx-auto rounded-3xl border-4 border-white/5 shadow-2xl" />
-              <div className="flex justify-center gap-4">
-                <button onClick={() => setResult(null)} className="px-8 py-4 border border-white/10 rounded-2xl font-bold hover:bg-white/5 transition-all">RESET</button>
-                <button onClick={handleDownload} className="bg-green-600 hover:bg-green-500 px-8 py-4 rounded-2xl font-black flex items-center gap-2 transition-all"><Download className="w-6 h-6" /> DOWNLOAD</button>
-              </div>
+            <div className="space-y-6">
+              <img src={result} alt="AI Result" className="max-w-sm mx-auto rounded-2xl shadow-2xl border border-white/10" />
+              <button onClick={() => setResult(null)} className="text-slate-500 font-bold uppercase text-xs tracking-widest">Clear Result</button>
             </div>
           )}
         </div>
       </main>
 
-      <footer className="py-12 text-slate-600 text-sm font-medium uppercase tracking-[0.2em]">
-        © 2026 NEURAL MEDIA LABS • OPEN SOURCE
+      {/* FOOTER WITH POLICY LINKS */}
+      <footer className="border-t border-white/5 py-12 px-6">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="text-slate-500 text-xs font-bold tracking-widest uppercase">© 2026 AIVISION NEURAL LABS</div>
+          <div className="flex gap-6 text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase">
+            <button onClick={() => setModalContent({title: 'Privacy Policy', content: 'We do not store your uploaded images. All processing is done via neural temporary buffers and deleted instantly after session end.'})} className="hover:text-purple-400">Privacy</button>
+            <button onClick={() => setModalContent({title: 'Terms', content: 'This tool is for personal use. Commercial redistribution of AI generated content via this suite requires a Pro license.'})} className="hover:text-purple-400">Terms</button>
+            <button onClick={() => setModalContent({title: 'Contact', content: 'Support: support@aivision.tools\nResponse time: 24-48 hours.'})} className="hover:text-purple-400">Contact</button>
+          </div>
+        </div>
       </footer>
     </div>
   );
 };
 
 export default App;
-    
